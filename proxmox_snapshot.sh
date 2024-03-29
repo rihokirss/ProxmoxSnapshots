@@ -51,3 +51,10 @@ cleanup_snapshots() {
                 echo "Snapshot ${snap_name} for VM ID ${VMID} deleted."
             fi
         fi
+    done
+}
+# Loo uus snapshot
+create_snapshot
+
+# Korista vanad snapshot'id
+cleanup_snapshots
