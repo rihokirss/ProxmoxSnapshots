@@ -15,7 +15,7 @@ This Bash script automates the management of virtual machine (VM) snapshots on a
 
 1. **Installing jq**
 
-   `jq` is a lightweight and flexible command-line JSON processor. It's required for parsing JSON responses in the script. Here's how to install `jq` on different Linux distributions:
+   `jq` is a lightweight and flexible command-line JSON processor. It's required for parsing JSON responses in the script.
 
    ```bash
    sudo apt update
