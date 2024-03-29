@@ -13,7 +13,16 @@ This Bash script automates the management of virtual machine (VM) snapshots on a
 
 ## Installation
 
-1. **Download the Script**  
+1. **Installing jq**
+
+   `jq` is a lightweight and flexible command-line JSON processor. It's required for parsing JSON responses in the script.
+
+   ```bash
+   sudo apt update
+   sudo apt install jq
+   ```
+
+2. **Download the Script**  
    Download the script to your Proxmox server. You can place it in a directory of your choice, for example, `/usr/local/bin`.
 
     ```bash
@@ -21,7 +30,7 @@ This Bash script automates the management of virtual machine (VM) snapshots on a
     chmod +x /usr/local/bin/vm_snapshot_manager.sh
     ```
 
-2. **Ensure Script Permissions**  
+3. **Ensure Script Permissions**  
    Make sure the script is executable.
 
     ```bash
