@@ -5,7 +5,7 @@ if [ $# -ne 4 ]; then
     echo "Kasutamine: $0 <VMID> <BASE_SNAPSHOT_NAME> <SNAPSHOT_RETENTION_HOURS> <WEEKLY_RETENTION_COUNT>"
     exit 1
 fi
-
+ 
 VMID=$1
 BASE_SNAPSHOT_NAME=$2
 SNAPSHOT_RETENTION_HOURS=$3
@@ -14,6 +14,12 @@ WEEKLY_RETENTION_COUNT=$4
 # Kontrolli, kas SNAPSHOT_RETENTION_HOURS ja WEEKLY_RETENTION_COUNT on positiivsed täisarvud
 if ! [[ $SNAPSHOT_RETENTION_HOURS =~ ^[0-9]+$ ]] || ! [[ $WEEKLY_RETENTION_COUNT =~ ^[0-9]+$ ]]; then
     echo "SNAPSHOT_RETENTION_HOURS ja WEEKLY_RETENTION_COUNT peavad olema positiivsed täisarvud."
+    exit 1
+fi
+
+# Kontrolli, kas SNAPSHOT_RETENTION_HOURS ja WEEKLY_RETENTION_COUNT on mõistlikud väärtused
+if [ $SNAPSHOT_RETENTION_HOURS -le 0 ] || [ $WEEKLY_RETENTION_COUNT -le 0 ]; then
+    echo "SNAPSHOT_RETENTION_HOURS ja WEEKLY_RETENTION_COUNT peavad olema suuremad kui 0."
     exit 1
 fi
 
@@ -38,12 +44,17 @@ cleanup_snapshots() {
         # Arvuta vanus tundides
         local age_hours=$(( ($current_time - $snap_time) / 3600 ))
 
-        # Kustuta snapshot'id, mis on vanemad kui SNAPSHOT_RETENTION_HOURS, välja arvatud nädala esimesed vastavalt WEEKLY_RETENTION_COUNT'ile
+        # Kui snapshot on vanem kui 24 tundi, siis kontrolli, kas see on nädala snapshot
         if [ $age_hours -gt $SNAPSHOT_RETENTION_HOURS ]; then
-            local snap_year_week=$(date -d "@$snap_time" +%Y-%V)
-            local current_year_week=$(date +%Y-%V)
-            local week_diff=$(( $(date -d $current_year_week +%s) - $(date -d $snap_year_week +%s) ))
-            week_diff=$(( week_diff / (3600 * 24 * 7) ))
+            local week_num=$(date -d "@$snap_time" +%V)
+            local current_week_num=$(date +%V)
+            local week_diff=$((10#$current_week_num - 10#$week_num))
+
+            # Adjust week_diff for year boundary crossing
+            if [ $(date -d "@$snap_time" +%Y) -lt $(date +%Y) ]; then
+                local weeks_in_year=$(date -d "$(date +%Y-12-31)" +%V)
+                week_diff=$((week_diff + weeks_in_year))
+            fi
 
             if [ $week_diff -ge $WEEKLY_RETENTION_COUNT ]; then
                 # Kustuta snapshot
@@ -53,6 +64,7 @@ cleanup_snapshots() {
         fi
     done
 }
+
 # Loo uus snapshot
 create_snapshot
 
